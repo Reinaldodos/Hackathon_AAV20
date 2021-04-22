@@ -9,7 +9,8 @@ input_GEODES = rio::import(file = "https://www.data.gouv.fr/fr/datasets/r/c2e2e8
 
 output_GEODES = filtrer_GEODES(input_GEODES = input_GEODES)
 
-Population = Charger_INSEE(file = "data/recensement.csv")
+# Population = Charger_INSEE(file = "data/recensement.csv")
+Population = rio::import(file = "data/Recensement.csv")
 
 output_urbaines = Incidence_aires_urbaines(input = output_GEODES,
                                            Population = Population,
