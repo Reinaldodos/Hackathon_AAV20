@@ -38,6 +38,6 @@ Table_index =
   IRIS %>% 
   select(CODE_IRIS, codgeo = DEPCOM) %>% 
   inner_join(y = ref_zonages, by = "codgeo") %>% 
-  distinct(CODE_IRIS, codgeo, uu2020, dep, reg, epci)
+  distinct(CODE_IRIS, codgeo, aav2020, dep, reg, epci)
 
 saveRDS(object = Table_index, file = "data/Table de correspondance.rds")
