@@ -24,29 +24,79 @@ tab_spf_com %>%
 # Taux d’incidence (TI)
 # pour 100000 habitants
 
-tab_spf_meta_com <- 
-  data.table::fread("https://www.data.gouv.fr/fr/datasets/r/f52f8c9f-d264-4c87-82e0-ae1ed6e92872")
+# niveau iris -------------
+tab_spf_iris_brute <- 
+  data.table::fread("https://www.data.gouv.fr/fr/datasets/r/44d4c265-24c3-4720-9144-f3e4a5213422")
+
+
+tab_spf_iris <- 
+  tab_spf_iris_brute %>% 
+  # slice(1:10) %>% 
+  mutate(date_debut = as.Date(substr(semaine_glissante, 1, 10))) %>% 
+  # mutate(across(ends_with("classe"), sub, pattern = "[", replacement = "")) %>% 
+  # mutate(across(ends_with("classe"), sub, pattern = "]", replacement = ""))
+  tidyr::separate(col = td_classe, into = c("tx_depistage_min", "tx_depistage_max"), sep = ";") %>% 
+  tidyr::separate(col = tp_classe, into = c("tx_positivite_min", "tx_positivite_max"), sep = ";") %>% 
+  tidyr::separate(col = ti_classe, into = c("tx_incidence_min", "tx_incidence_max"), sep = ";") %>% 
+  mutate(across(starts_with("tx_"), readr::parse_number))
+
+# zonages ---------------------------
 ref_zonages <- 
   rio::import("https://www.insee.fr/fr/statistiques/fichier/2028028/table-appartenance-geo-communes-20_zonages20.zip",
               skip = 5) %>% 
   rename_with(tolower)
 
+# table populations iris 2017 -------------------
+tab_pop_iris <- 
+  rio::import("https://www.insee.fr/fr/statistiques/fichier/4799309/base-ic-evol-struct-pop-2017.zip", 
+              skip = 5) %>% 
+  rename_with(tolower)
 
-toto <- 
+
+# calculs niveau AAV -------------
+
+tab_AAV <- 
   tab_spf_com %>% 
-  mutate(com2020 = case_when(
-    substr(com2020, 1, 2) == "75" ~ "75056",
-    substr(com2020, 1, 3) == "132" ~ "13055",
-    substr(com2020, 1, 3) == "693" ~ "69123",
-    com2020 == 21213               ~ "21452",
-    com2020 == 21507               ~ "21183",
-    com2020 == 45287               ~ "45307",
-    TRUE                          ~ com2020)) %>% 
-  merge(ref_zonages %>% rename(com2020 = codgeo),
-        by = "com2020",
-        all.x = TRUE)
+  # filtre age
+  filter(clage_65 == 0) %>% 
+  select(-clage_65) %>% 
+  # ajout pop17
+  merge(tab_pop_iris %>% 
+          group_by(com) %>% 
+          summarise(pop17 = sum(p17_pop, na.rm = TRUE)) %>% 
+          ungroup %>% 
+          rename(com2020 = com),
+        by = "com2020") %>% 
+  # comptage par AAV
+  mutate(aav = factor(com2020,
+                      levels = ref_zonages$codgeo,
+                      labels = ref_zonages$aav2020) %>% 
+           as.character()) %>% 
+  mutate(dom_metro = ifelse(substr(com2020, 1, 2) > "95", "dom", "metro")) %>% 
+  group_by(dom_metro, aav) %>% 
+  # summarise(across(where(is.numeric), 
+  #                  sum, na.rm = TRUE)) 
+  summarise(pop17_aav = sum(pop17, na.rm = TRUE),
+            tx_incidence_min = sum(tx_incidence_min * pop17, na.rm = TRUE) / pop17_aav
+            )
+    
+  
+  
+  
+# carte AAV ----  
+  # install.packages("oceanis")
 
+# zonage AAV -----------------
+shp_aav <-
+  sf::read_sf("fonds_carte/aav20_francemetro_2020.shp")
 
-toto %>% 
-  filter(is.na(ze2020)) %>% 
-  count(com2020)
+# carte AAV ---------------
+tab_AAV %>% 
+  filter(dom_metro == "metro") %>% 
+  as.data.frame() %>% 
+  # oceanis::plot_classes(
+  oceanis::leaflet_classes(
+    fondMaille = shp_aav,
+    idData = "aav",
+    varRatio = "tx_incidence_min"
+  )
