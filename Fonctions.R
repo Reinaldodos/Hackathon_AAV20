@@ -127,7 +127,7 @@ make_incidence <- function(output_GEODES, output_urbaines) {
   
   Breaks = output_GEODES$low %>% unique() %>% sort
   
-  Couleurs = RColorBrewer::brewer.pal(n = length(Labels), name = "Blues")
+  Couleurs = RColorBrewer::brewer.pal(n = length(Labels), name = "PuOr")
   
   output =
     output_urbaines %>%

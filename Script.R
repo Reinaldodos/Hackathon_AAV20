@@ -23,3 +23,4 @@ Carte_low =
 Carte_high = 
   CartO(data = output_urbaines, selon = HIGH) +
   labs(subtitle = paste("Hypothèse haute", lubridate::today()))  
+
