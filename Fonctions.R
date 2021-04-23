@@ -1,3 +1,4 @@
+pacman::p_load(magrittr, tidyverse, rio)
 CartO <- function(data, selon) {
   require(magrittr)
   
