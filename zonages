@@ -1,0 +1,52 @@
+library(dplyr)
+library(ggformula)
+
+
+# https://www.data.gouv.fr/fr/datasets/donnees-de-laboratoires-infra-departementales-durant-lepidemie-covid-19/#_
+tab_spf_com_brute <- 
+  data.table::fread("https://www.data.gouv.fr/fr/datasets/r/c2e2e844-9671-4f81-8c81-1b79f7687de3")
+
+tab_spf_com <- 
+tab_spf_com %>% 
+  # slice(1:10) %>% 
+  mutate(date_debut = as.Date(substr(semaine_glissante, 1, 10))) %>% 
+  # mutate(across(ends_with("classe"), sub, pattern = "[", replacement = "")) %>% 
+  # mutate(across(ends_with("classe"), sub, pattern = "]", replacement = ""))
+  tidyr::separate(col = td_classe, into = c("tx_depistage_min", "tx_depistage_max"), sep = ";") %>% 
+  tidyr::separate(col = tp_classe, into = c("tx_positivite_min", "tx_positivite_max"), sep = ";") %>% 
+  tidyr::separate(col = ti_classe, into = c("tx_incidence_min", "tx_incidence_max"), sep = ";") %>% 
+  mutate(across(starts_with("tx_"), readr::parse_number))
+
+# Taux de dépistage (TD)
+# pour 100000 habitants
+# Taux de positivité (TP)
+# (en %)
+# Taux d’incidence (TI)
+# pour 100000 habitants
+
+tab_spf_meta_com <- 
+  data.table::fread("https://www.data.gouv.fr/fr/datasets/r/f52f8c9f-d264-4c87-82e0-ae1ed6e92872")
+ref_zonages <- 
+  rio::import("https://www.insee.fr/fr/statistiques/fichier/2028028/table-appartenance-geo-communes-20_zonages20.zip",
+              skip = 5) %>% 
+  rename_with(tolower)
+
+
+toto <- 
+  tab_spf_com %>% 
+  mutate(com2020 = case_when(
+    substr(com2020, 1, 2) == "75" ~ "75056",
+    substr(com2020, 1, 3) == "132" ~ "13055",
+    substr(com2020, 1, 3) == "693" ~ "69123",
+    com2020 == 21213               ~ "21452",
+    com2020 == 21507               ~ "21183",
+    com2020 == 45287               ~ "45307",
+    TRUE                          ~ com2020)) %>% 
+  merge(ref_zonages %>% rename(com2020 = codgeo),
+        by = "com2020",
+        all.x = TRUE)
+
+
+toto %>% 
+  filter(is.na(ze2020)) %>% 
+  count(com2020)
