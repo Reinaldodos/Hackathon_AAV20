@@ -1,4 +1,4 @@
-
+source(file = "Script.R")
 require(leaflet)
 DATA = 
   "data/Donnees pour leaflet.rds" %>% rio::import() %>% 
@@ -23,27 +23,6 @@ labels <- sprintf(
   "<strong>%s</strong><br/>Taux d'incidence: %g / 100 000 hab.",
   DATA$name, DATA$density
 ) %>% lapply(htmltools::HTML)
-
-carte %>% 
-  addPolygons(
-    fillColor = ~pal(density),
-    weight = 2,
-    opacity = 1,
-    color = "white",
-    dashArray = "3",
-    fillOpacity = 0.7,
-    highlight = highlightOptions(
-      weight = 5,
-      color = "#666",
-      dashArray = "",
-      fillOpacity = 0.7,
-      bringToFront = TRUE),
-    label = labels,
-    labelOptions = labelOptions(
-      style = list("font-weight" = "normal", padding = "3px 8px"),
-      textsize = "15px",
-      direction = "auto"))
-
 
 
 
