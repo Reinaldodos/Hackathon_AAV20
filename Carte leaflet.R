@@ -22,7 +22,7 @@ pal <- colorBin("OrRd", domain = DATA$density, bins = bins)
 
 labels <- sprintf(
   "<strong>%s</strong><br/>Taux d'incidence: %g / 100 000 hab.",
-  DATA$name, DATA$density
+  DATA$name, round(x = DATA$density, digits = 0)
 ) %>% lapply(htmltools::HTML)
 
 list(labels=labels, bins=bins, DATA=DATA) %>% 
