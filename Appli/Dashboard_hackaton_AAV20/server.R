@@ -7,15 +7,6 @@ library(magrittr)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-    Donnees = rio::import(file = "donnees.rds")
-    
-    colorpal <- reactive({
-        leaflet::colorBin(
-            input$Couleur,
-            domain = Donnees$DATA$density,
-            bins = Donnees$bins
-        )
-    })
     
     pal <- colorBin("OrRd", 
                     domain = Donnees$DATA$density, 
@@ -25,9 +16,12 @@ shinyServer(function(input, output) {
     output$mymap <- renderLeaflet({
         Donnees$DATA %>%
             leaflet() %>%
-            setView(lng = 3,
-                    lat = 47,
-                    zoom = 5) %>%
+            leaflet::fitBounds(
+                lng1 = Bounds[1], 
+                lat1 = Bounds[2],
+                lng2 = Bounds[3],
+                lat2 = Bounds[4]
+                ) %>% 
             addTiles() %>% 
             addPolygons(
                 fillColor = ~ pal(Donnees$DATA$density),
