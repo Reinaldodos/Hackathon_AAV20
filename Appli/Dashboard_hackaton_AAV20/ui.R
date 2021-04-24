@@ -9,7 +9,14 @@ shinyUI(bootstrapPage(
   # Application title
   titlePanel("Taux d'incidence par aire urbaine"),
   leafletOutput("mymap"),
-  absolutePanel(
-    
+  absolutePanel(top = 10, right = 10, draggable = TRUE,
+    pickerInput(
+      inputId = "Ville",
+      label = "Recherche par ville ou code postal", 
+      choices = Recherche$Recherche,
+      options = list(
+        `live-search` = TRUE), 
+      selected = "France entière"
+    )
   )
 ))

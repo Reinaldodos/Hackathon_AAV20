@@ -12,6 +12,11 @@ shinyServer(function(input, output) {
                     domain = Donnees$DATA$density, 
                     bins = Donnees$bins)
     
+    Focus = reactive({
+        Recherche %>% 
+            dplyr::filter(Recherche == input$Ville) %>% 
+            sf::st_bbox() %>% as.numeric()
+    })
     
     output$mymap <- renderLeaflet({
         Donnees$DATA %>%
@@ -47,34 +52,14 @@ shinyServer(function(input, output) {
         
     })
     
-    # observe({
-    #     pal <- colorpal()
-    #     
-    #     leafletProxy(mapId = "map",
-    #                  data = Donnees$DATA) %>%
-    #         # removeShape(layerId = "Chloro") %>% 
-    #         addPolygons(
-    #             # layerId = "Chloro",
-    #             fillColor = ~ pal(Donnees$DATA$density),
-    #             weight = 2,
-    #             opacity = 1,
-    #             color = "white",
-    #             dashArray = "3",
-    #             fillOpacity = 0.7,
-    #             highlight = highlightOptions(
-    #                 weight = 5,
-    #                 color = "#666",
-    #                 dashArray = "",
-    #                 fillOpacity = 0.7,
-    #                 bringToFront = TRUE
-    #             ),
-    #             label = Donnees$labels,
-    #             labelOptions = labelOptions(
-    #                 style = list("font-weight" = "normal", padding = "3px 8px"),
-    #                 textsize = "15px",
-    #                 direction = "auto"
-    #             )
-    #         )
-    #     
-    # })
+    observe({
+        leafletProxy(mapId = "mymap") %>%
+            flyToBounds(
+                lng1 = Focus()[1],
+                lat1 = Focus()[2],
+                lng2 = Focus()[3],
+                lat2 = Focus()[4]
+                        )
+
+    })
 })
