@@ -14,7 +14,8 @@ carte =
   addTiles()
 
 RColorBrewer::brewer.pal.info %>% 
-  filter(colorblind)
+  filter(colorblind,
+         category == "seq") %>% rownames()
 
 bins = output_GEODES$low %>% sort %>% unique()
 pal <- colorBin("OrRd", domain = DATA$density, bins = bins)
@@ -24,5 +25,6 @@ labels <- sprintf(
   DATA$name, DATA$density
 ) %>% lapply(htmltools::HTML)
 
-
+list(labels=labels, bins=bins, DATA=DATA) %>% 
+  saveRDS(file = "Appli/Dashboard_hackaton_AAV20/donnees.rds")
 
