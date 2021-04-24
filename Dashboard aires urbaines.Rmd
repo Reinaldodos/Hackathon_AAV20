@@ -32,6 +32,10 @@ carte %>%
     labelOptions = labelOptions(
       style = list("font-weight" = "normal", padding = "3px 8px"),
       textsize = "15px",
-      direction = "auto"))
+      direction = "auto")) %>% 
+  flyToBounds(lng1 = 1.791475, 
+              lat1 = 50.077852, 
+              lng2 = 1.873482, 
+              lat2 = 50.142876)
 ```
 

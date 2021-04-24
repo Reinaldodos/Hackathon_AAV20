@@ -1,7 +1,3 @@
-Bases_urbaines %>% 
-  select(CODGEO, LIBGEO, geometry) %>% 
-  sf::st_transform(crs = 4326) %>% 
-  sf::st_centroid() 
 
 Correspondance_INSEE_Poste = 
   "https://public.opendatasoft.com/explore/dataset/correspondance-code-insee-code-postal/download/?format=geojson&timezone=Europe/Berlin&lang=fr" %>% 
@@ -11,14 +7,6 @@ Correspondance_INSEE_Poste =
 test = 
   Correspondance_INSEE_Poste %>% as.data.frame() %>%
   select(insee_com, postal_code, nom_comm)
-
-list(
-  Bases_urbaines %>% as.data.frame() %>%
-    select(CODGEO, LIBGEO) ,
-  test
-) %>%
-  reduce(.f = full_join, by = c("CODGEO" = "insee_com")) %>%
-  filter(is.na(postal_code))
 
 test = 
   tribble(
@@ -42,5 +30,4 @@ sf::st_coordinates(output) %>%
   select(-geometry) %>% 
   data.table::data.table() %>% 
   rio::export(file = "data/recherche code postal.csv")
-  
   
